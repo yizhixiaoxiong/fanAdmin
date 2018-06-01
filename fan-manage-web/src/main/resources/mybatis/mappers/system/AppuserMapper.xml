@@ -30,7 +30,7 @@
 	
 	<!-- 表名 -->
 	<sql id="tableName">
-		APP_USER
+		app_user
 	</sql>
 	<sql id="roleTable">
 		sys_role

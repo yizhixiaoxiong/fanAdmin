@@ -1,5 +1,14 @@
 var locat = (window.location+'').split('/'); 
-$(function(){if('main'== locat[3]){locat =  locat[0]+'//'+locat[2];}else{locat =  locat[0]+'//'+locat[2]+'/'+locat[3];};});
+//获取路径
+var locat = (window.location+'').split('/'); 
+$(function(){
+	if('main'== locat[4]){
+		locat =  locat[0]+'//'+locat[2];
+	}else{
+		locat =  locat[0]+'//'+locat[2]+'/'+locat[3]+'/'+locat[4];
+	};
+});
+
 
 var fmid = "fhindex";	//菜单点中状态
 var mid = "fhindex";	//菜单点中状态
@@ -139,7 +148,7 @@ function editPhoto(){
 	 var diag = new top.Dialog();
 	 diag.Drag=true;
 	 diag.Title ="修改头像";
-	 diag.URL = locat+'/head/editPhoto.do';
+	 diag.URL = locat+'/rest/head/editPhoto';
 	 diag.Width = 650;
 	 diag.Height = 530;
 	 diag. ShowMaxButton = true;	//最大化按钮
@@ -156,7 +165,7 @@ function editUserH(){
 	 var diag = new top.Dialog();
 	 diag.Drag=true;
 	 diag.Title ="个人资料";
-	 diag.URL = locat+'/user/goEditMyU.do';
+	 diag.URL = locat+'/rest/head/goEditMyU';
 	 diag.Width = 469;
 	 diag.Height = 465;
 	 diag.CancelEvent = function(){ //关闭事件
@@ -171,7 +180,7 @@ function editSys(){
 	 var diag = new top.Dialog();
 	 diag.Drag=true;
 	 diag.Title ="系统设置";
-	 diag.URL = locat+'/head/goSystem.do';
+	 diag.URL = locat+'/rest/head/goSystem';
 	 diag.Width = 600;
 	 diag.Height = 526;
 	 diag.CancelEvent = function(){ //关闭事件

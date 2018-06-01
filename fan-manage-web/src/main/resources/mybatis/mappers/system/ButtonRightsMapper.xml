@@ -5,7 +5,7 @@
 	
 	<!--关联表名 -->
 	<sql id="tableName">
-		SYS_ROLE_FHBUTTON
+		sys_role_button
 	</sql>
 	
 	<!--按钮表名 -->

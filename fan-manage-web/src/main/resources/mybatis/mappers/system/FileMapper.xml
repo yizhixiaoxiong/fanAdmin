@@ -5,7 +5,7 @@
 	
 	<!-- 表名 -->
 	<sql id="tabelName">
-		oa_fhfile
+		oa_file
 	</sql>
 	
 	<!-- 字段 -->

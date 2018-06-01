@@ -131,7 +131,7 @@ public class LoginController extends BaseController {
 						errInfo = "usererror";//用户或者密码错误
 					}
 				}else{
-					errInfo = "codeerror";
+					errInfo = "codeerror";	//验证码错误
 				}
 				
 				if(Tools.isEmpty(errInfo)){

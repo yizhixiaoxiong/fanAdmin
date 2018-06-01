@@ -184,7 +184,7 @@ if(self!=top){
 <script type="text/javascript">
 	//加载完之后执行
 	$(document).ready(function() {
-		changeCode1();
+		changeCode1();	//验证码
 		$("#codeImg").bind("click", changeCode1);
 		$("#zcodeImg").bind("click", changeCode2);
 	});
@@ -200,26 +200,92 @@ if(self!=top){
 		var time = new Date();
 		return time.getTime();
 	}
-	//登陆
+	//服务端返回登陆信息
 	function severCheck(){
-		var loginname = $("#loginname").val();
-		var password = $("#password").val();
-		var code = loginname+","+password+","+$("#code").val();
-		$.ajax({
-			type:"POST",
-			url:"rest/login_login",
-			data:{KEYDATA:code,tm:new Date().getTime()},
-			dataType:"json",
-			success:function(data){
-				if("success" == data.result){
-					window.location.href="rest/main/index";
-				}else{
-					window.location.href="/"
+		if(check()){
+			var loginname = $("#loginname").val();
+			var password = $("#password").val();
+			var code = loginname+","+password+","+$("#code").val();
+			$.ajax({
+				type:"POST",
+				url:"rest/login_login",
+				data:{KEYDATA:code,tm:new Date().getTime()},
+				dataType:"json",
+				success:function(data){
+					
+					if("success" == data.result){
+						window.location.href="rest/main/index";
+					}else if("usererror" == data.result){
+						$("#loginname").tips({
+							side : 1,
+							msg : "用户名或密码有误",
+							bg : '#FF5080',
+							time : 15
+						});
+						$("#loginname").focus();
+					}else if("codeerror" == data.result){
+						$("#code").tips({
+							side : 1,
+							msg : "验证码输入有误",
+							bg : '#FF5080',
+							time : 15
+						});
+						$("#code").focus();
+					}else{
+						$("#loginname").tips({
+							side : 1,
+							msg : "身份认证失败",
+							bg : '#FF5080',
+							time : 15
+						});
+						$("#loginname").focus();
+					}
 				}
-			}
-		});
+			});
+		}
 	}
-
+	//客户端校验
+	function check() {
+		if ($("#loginname").val() == "") {
+			$("#loginname").tips({
+				side : 2,
+				msg : '用户名不得为空',
+				bg : '#AE81FF',
+				time : 3
+			});
+			$("#loginname").focus();
+			return false;
+		} else {
+			$("#loginname").val(jQuery.trim($('#loginname').val()));
+		}
+		if ($("#password").val() == "") {
+			$("#password").tips({
+				side : 2,
+				msg : '密码不得为空',
+				bg : '#AE81FF',
+				time : 3
+			});
+			$("#password").focus();
+			return false;
+		}
+		if ($("#code").val() == "") {
+			$("#code").tips({
+				side : 1,
+				msg : '验证码不得为空',
+				bg : '#AE81FF',
+				time : 3
+			});
+			$("#code").focus();
+			return false;
+		}
+		$("#loginbox").tips({
+			side : 1,
+			msg : '正在登录 , 请稍后 ...',
+			bg : '#68B500',
+			time : 10
+		});
+		return true;
+	}
 
 	function changepage(value){
 		if(value == 1){
@@ -232,5 +298,7 @@ if(self!=top){
 	}
 
 </script>
+<script type="text/javascript" src="rest/static/js/jquery.tips.js"></script>
+<script type="text/javascript" src="rest/static/js/jquery.cookie.js"></script>
 </body>
 </html>
