@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 上传下载文件
@@ -12,7 +13,20 @@ import org.apache.commons.io.FileUtils;
  *
  */
 public class FileUpload {
-	//判断路径是否存在，存在就上传，不存在便创建
+	
+	/**
+	 * 
+	 * @param file
+	 * @param filePath
+	 * @param fileName
+	 * @return
+	 */
+	public static String fileUp(MultipartFile file,String filePath, String fileName) {
+		String extName = "";
+		
+		return null;
+	}
+	
 	
 	/**
 	 * 写文件到当前目录的upload目录中
