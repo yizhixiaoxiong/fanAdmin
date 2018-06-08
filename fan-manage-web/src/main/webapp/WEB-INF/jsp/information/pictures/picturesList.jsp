@@ -91,8 +91,8 @@
 										</td>
 										<td class='center' style="width:30px;">${vs.index+1}</td>
 										<td class="center">
-											<a href="<%=basePath%>uploadFiles/uploadImgs/${var.PATH}" title="${var.TITLE}" class="bwGal">
-												<img src="<%=basePath%>uploadFiles/uploadImgs/${var.PATH}" alt="${var.TITLE}" width="100">
+											<a href="<%=basePath%>rest/pictures/IoReadImage/20180608/${var.PATH}" title="${var.TITLE}" class="bwGal">
+												<img src="<%=basePath%>rest/pictures/IoReadImage/20180608/${var.PATH}" alt="${var.TITLE}" width="100">
 											</a>
 										</td>
 										<td class='center'>${var.TITLE}</td>
@@ -167,6 +167,12 @@
 	
 	<script type="text/javascript">
 		$(top.hangge());
+		
+		$("a.bwGal").zoomimage({
+			border: 20,
+			centered: true,
+			hideSource: true
+		});
 		//全选按钮
 		function selectAll(){
 			
@@ -193,7 +199,13 @@
 		}
 		//编辑
 		function edit(Id){
-			
+			top.jzts();
+			var diag = new top.Dialog();
+			diag.Drag=true;
+			diag.Title ="编辑";
+			diag.URL = '<%=basePath%>rest/pictures/goEdit';
+			diag.Width = 800;
+		 	diag.Height = 490;
 		}
 		//删除
 		function del(Id,path){

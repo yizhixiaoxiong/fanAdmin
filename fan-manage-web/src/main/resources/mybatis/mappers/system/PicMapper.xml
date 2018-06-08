@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PicMapper">
+	
+	<!-- 表名 -->
+	<sql id="tableName">
+		tb_pictures
+	</sql>
+	
+	<!-- 字段 -->
+	<sql id="Field">
+		TITLE,	
+		NAME,	
+		PATH,	
+		CREATETIME,	
+		MASTER_ID,	
+		BZ,	
+		PICTURES_ID
+	</sql>
+	
+	<!-- 字段值 -->
+	<sql id="FieldValue">
+		#{TITLE},	
+		#{NAME},	
+		#{PATH},	
+		#{CREATETIME},	
+		#{MASTER_ID},	
+		#{BZ},	
+		#{PICTURES_ID}
+	</sql>
+	
+	<!-- 列表 -->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+		select
+			a.TITLE,	
+			a.NAME,	
+			a.PATH,	
+			a.CREATETIME,	
+			a.MASTER_ID,	
+			a.BZ,	
+			a.PICTURES_ID
+		from 
+			<include refid="tableName"></include> a
+		where 1 = 1
+		<if test="pd.KEYW != null and pd.KEYW != ''"><!-- 关键词检索 -->
+			and
+				(
+				 a.TITLE LIKE CONCAT(CONCAT('%', #{pd.KEYW}),'%')
+				 or 
+				 a.NAME LIKE CONCAT(CONCAT('%', #{pd.KEYW}),'%') 
+				 or
+				 a.PICTURES_ID LIKE CONCAT(CONCAT('%', #{pd.KEYW}),'%')
+				 or
+				 a.MASTER_ID LIKE CONCAT(CONCAT('%', #{pd.KEYW}),'%')
+				)
+		</if>
+		order by CREATETIME 
+	</select>
+	
+	<!-- 根据id查找 -->
+	<select id="findById" resultType="pd">
+		select <include refid="Field"></include>
+		from <include refid="tableName"></include> p
+		where p.PICTURES_ID = #{PICTURES_ID}
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="save">
+		insert into <include refid="tableName"></include>
+	 	(
+	 		<include refid="Field"></include>
+	 	)
+ 	 	values
+ 	 	(
+ 	 		<include refid="FieldValue"></include>
+ 	 	)
+	</insert>
+</mapper>
