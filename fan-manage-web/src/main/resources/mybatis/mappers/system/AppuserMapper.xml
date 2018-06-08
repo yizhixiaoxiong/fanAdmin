@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AppuserMapper">
+	
+	<!-- 会员结果 -->
+	<resultMap type="AppUser" id="AppUserrestltMap">
+		<id property="USER_ID" column="USER_ID" />
+		<result property="USERNAME" column="USERNAME"/>
+		<result property="PASSWORD" column="PASSWORD"/>
+		<result property="NAME" column="NAME"/>
+		<result property="RIGHTS" column="RIGHTS"/>
+		<result property="LAST_LOGIN" column="LAST_LOGIN"/>
+		<result property="IP" column="IP"/>
+		<result property="STATUS" column="STATUS"/>
+		<result property="BZ" column="BZ"/>
+		<result property="PHONE" column="PHONE"/>
+		<result property="SFID" column="SFID"/>
+		<result property="START_TIME" column="START_TIME"/>
+		<result property="END_TIME" column="END_TIME"/>
+		<result property="YEARS" column="YEARS"/>
+		<result property="EMAIL" column="EMAIL"/>
+		<result property="NUMBER" column="NUMBER"/>
+		<association property="Role" column="ROLE_ID" javaType="Role">
+			<id column="ROLE_ID" property="ROLE_ID"/>
+			<result column="ROLE_NAME" property="ROLE_NAME"/>
+			<result column="ROLE_RIGHTS" property="RIGHTS"/>
+		</association>
+	</resultMap>
+	
+	<!-- 表名 -->
+	<sql id="tableName">
+		APP_USER
+	</sql>
+	<sql id="roleTable">
+		sys_role
+	</sql>
+	
+	<!-- 字段 -->
+	<sql id="Field">
+		USERNAME,
+		PASSWORD,
+		NAME,
+		RIGHTS,
+		ROLE_ID,
+		LAST_LOGIN,
+		IP,
+		STATUS,
+		BZ,
+		PHONE,
+		SFID,
+		START_TIME,
+		END_TIME,
+		YEARS,
+		EMAIL,
+		NUMBER
+	</sql>
+	
+	<!-- 字段值 -->
+	<sql id="FieldValue">
+		#{USERNAME},
+		#{PASSWORD},
+		#{NAME},
+		#{RIGHTS},
+		#{ROLE_ID},
+		#{LAST_LOGIN},
+		#{IP},
+		#{STATUS},
+		#{BZ},
+		#{PHONE},
+		#{SFID},
+		#{START_TIME},
+		#{END_TIME},
+		#{YEARS},
+		#{EMAIL},
+		#{NUMBER}	
+	</sql>
+	
+	<!-- 会员列表 -->
+	<select id="userlistPage" parameterType="page" resultType="pd">
+		select
+			u.USER_ID,
+			u.USERNAME,
+			u.PASSWORD,
+			u.LAST_LOGIN,
+			u.NAME,
+			u.IP,
+			u.END_TIME,
+			u.YEARS,
+			u.STATUS,
+			u.EMAIL,
+			u.PHONE,
+			u.NUMBER,
+			r.ROLE_ID,
+			r.ROLE_NAME
+		from 
+			<include refid="tableName"></include> u,
+			<include refid="roleTable"></include> r
+		where 
+			u.ROLE_ID = r.ROLE_ID
+			and r.PARENT_ID = '2'
+			<if test=" null != pd.keywords and '' != pd.keywords" >
+				and (
+					u.USERNAME LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%')
+					or
+					u.EMAIL LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%')
+					or
+					u.NUMBER LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%')
+					)
+			</if>
+			<if test="pd.ROLE_ID != null and pd.ROLE_ID != ''"><!-- 角色检索 -->
+			and u.ROLE_ID=#{pd.ROLE_ID} 
+			</if>
+			<if test="pd.lastLoginStart!=null and pd.lastLoginStart!=''"><!-- 到期时间检索 -->
+				and u.END_TIME &gt;= #{pd.lastLoginStart} 
+			</if>
+			<if test="pd.lastLoginEnd!=null and pd.lastLoginEnd!=''"><!-- 到期时间检索 -->
+				and u.END_TIME &lt;= #{pd.lastLoginEnd} 
+			</if>
+			<if test="pd.STATUS != null and pd.STATUS != ''"><!-- 状态检索 -->
+				and u.STATUS=#{pd.STATUS} 
+			</if>
+			order by u.NAME
+	</select>
+	
+	<!-- 根据id查找对象 -->
+	<select id="findByUiId" parameterType="pd" resultType="pd">
+		select 
+			USER_ID,
+			<include refid="Field"></include>
+		from <include refid="tableName"></include>
+		where USER_ID = #{USER_ID}
+	</select>
+	
+	<!-- 保存对象 -->
+	<insert id="saveU" parameterType="pd">
+		insert into
+			<include refid="tableName"></include>
+		 (
+		 	<include refid="Field"></include>
+		 )values(
+		 	<include refid="FieldValue"></include>
+		 )
+		 <selectKey keyColumn="USER_ID" resultType="int" order="AFTER">
+		 	SELECT LAST_INSERT_ID()
+		 </selectKey>
+	</insert>
+	
+	<!-- 更新用户 -->
+	<update id="editU" parameterType="java.util.Map" >
+		update 
+			<include refid="tableName"></include> u
+		set	
+			u.USERNAME		=#{pd.USERNAME},
+			u.NAME			=#{pd.NAME},
+			ROLE_ID 		= #{pd.ROLE_ID},
+			BZ				= #{pd.BZ},
+			PHONE 			= #{pd.PHONE},
+			SFID 			= #{pd.SFID},
+			START_TIME	 	= #{pd.START_TIME},
+			END_TIME 		= #{pd.END_TIME},
+			YEARS			= #{pd.YEARS},
+			STATUS 			= #{pd.STATUS},
+			EMAIL			= #{pd.EMAIL},
+			NUMBER 			= #{pd.NUMBER}
+		<if test="PASSWORD != null and PASSWORD != ''">
+			,PASSWORD		= #{pd.PASSWORD}
+		</if>
+		where 
+			u.USER_ID = #{USER_ID}
+	</update>
+	
+	<!-- 根据用户名查找会员 -->
+	<select id="findByUsername" parameterType="pd" resultType="pd">
+		select
+			u.USER_ID
+		 	<include refid="Field"></include>
+		from 
+			<include refid="tableName"></include> u 
+		where 
+			u.USERNAME = #{USERNAME}
+	</select>
+	
+	<!-- 根据邮箱查找会员 -->
+	<select id="findByEmail" parameterType="pd" resultType="pd">
+		select
+			u.USER_ID
+		 	<include refid="Field"></include>
+		from 
+			<include refid="tableName"></include> u 
+		where 
+			u.EMAIL = #{EMAIL}
+	</select>
+	<!-- 根据编号查找会员 -->
+	<select id="findByNumber" parameterType="pd" resultType="pd">
+		select
+			u.USER_ID
+		 	<include refid="Field"></include>
+		from 
+			<include refid="tableName"></include> u 
+		where 
+			u.NUMBER = #{NUMBER}
+	</select>
+	
+	<!-- 删除会员 -->
+	<delete id="deleteU">
+		delete from <include refid="tableName"></include>
+		where USER_ID = #{USER_ID}
+	</delete>
+	
+	<!-- 删除所有用户 -->
+	<delete id="deleteAllU" parameterType="String">
+		delete from 
+			<include refid="tableName"></include>
+		where
+			USER_ID in
+			 <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                  #{item}
+             </foreach>
+	</delete>
+</mapper>

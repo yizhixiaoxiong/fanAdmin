@@ -1,0 +1,44 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+	
+	<!-- 安全管理器 -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">  
+  	  <property name="realm" ref="myRealm"/>  
+	</bean> 
+	
+	<!-- 自定义realm -->
+	<bean id="myRealm" class="com.fan.manage.interceptor.MyRealm"></bean>
+	
+	<!-- Shiro Filter -->
+		<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+			<property name="securityManager" ref="securityManager" />
+			
+			<property name="loginUrl" value="/" />
+			
+			<property name="successUrl" value="/rest/main/index" />
+			
+			<property name="unauthorizedUrl" value="/rest/login_toLogin" />
+			
+			<property name="filterChainDefinitions">
+				<value>
+				/rest/static/login/** 			= anon
+				/rest/plugins/keypad/** 		= anon
+				/rest/static/js/myjs/** 		= authc
+				/rest/static/js/** 				= anon
+				/rest/uploadFiles/uploadImgs/** = anon
+	           	/rest/code 					    = anon
+	           	/rest/login_login	 			= anon
+           		/rest/app**/** 					= anon
+           		/rest/weixin/** 				= anon
+	           	/**								= authc
+				</value>
+			</property>
+		</bean>
+
+</beans>

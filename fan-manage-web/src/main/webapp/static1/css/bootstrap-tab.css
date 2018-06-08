@@ -1,0 +1,3 @@
+.nav-tabs li a{line-height:2}
+.nav-tabs .active a{border-top: solid 2px #3498db !important;}
+.nav-tabs li a .icon-remove-sign:hover{color:red;cursor: pointer;}
