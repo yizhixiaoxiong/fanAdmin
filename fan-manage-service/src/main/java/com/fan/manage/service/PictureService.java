@@ -55,7 +55,7 @@ public interface PictureService{
 	 * @param ArrayDATA_IDS
 	 * @throws Exception
 	 */
-	public void deleteAll(String[] ArrayDATA_IDS)throws Exception;
+	public void deleteAll(String[] ids)throws Exception;
 	
 	/**
 	 * 批量获取
@@ -63,7 +63,7 @@ public interface PictureService{
 	 * @return
 	 * @throws Exception
 	 */
-	public List<PageData> getAllById(String[] ArrayDATA_IDS)throws Exception;
+	public List<PageData> getAllById(String[] ids)throws Exception;
 	
 	/**
 	 * 删除图片

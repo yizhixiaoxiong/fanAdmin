@@ -82,9 +82,23 @@
 <script src="static/ace/js/ace/elements.fileinput.js"></script>
 <!--提示框-->
 <script type="text/javascript" src="static/js/jquery.tips.js"></script>	
-
+<!-- 弹出提示 -->
+<script src="static/ace/js/bootbox.js"></script>
 <script type="text/javascript">
 $(top.hangge());
+
+$(function(){
+	//上传
+	$('#tp').ace_file_input({
+		no_file:'请选择图片 ...',
+		btn_choose:'选择',
+		btn_change:'更改',
+		droppable:false,
+		onchange:null,
+		thumbnail:false, //| true | large
+		whitelist:'gif|png|jpg|jpeg',
+	})
+})
 
 function fileType(){
 	
@@ -130,8 +144,20 @@ function save(){
 	
 }
 
-function delP(){
-	
+//删除
+function delP(path,id){
+	bootbox.confirm("确定要删除吗?",function(result){
+		if(result){
+			var url = "<%=basePath%>rest/pictures/deltp?PATH="+path+"&PICTURES_ID="+id+"&tm="+new Date().getTime();
+			$.get(url,function(data){
+				data = JSON.parse(data)
+				if("success" == data.result){
+					bootbox.alert("删除成功")
+					document.location.reload();
+				}
+			})
+		}
+	});
 }
 
 </script>

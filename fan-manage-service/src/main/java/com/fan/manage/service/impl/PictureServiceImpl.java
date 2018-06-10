@@ -68,16 +68,16 @@ public class PictureServiceImpl implements PictureService{
 	 * 根据id删除全部
 	 */
 	@Override
-	public void deleteAll(String[] ArrayDATA_IDS) throws Exception {
-		mapper.delete("PicMapper.deleteAll", ArrayDATA_IDS);
+	public void deleteAll(String[] ids) throws Exception {
+		mapper.delete("PicMapper.deleteAll", ids);
 	}
 	
 	/**
 	 * 获取全部
 	 */
 	@Override
-	public List<PageData> getAllById(String[] ArrayDATA_IDS) throws Exception {
-		return (List<PageData>) mapper.findForList("PicMapper.getAllById", ArrayDATA_IDS);
+	public List<PageData> getAllById(String[] ids) throws Exception {
+		return (List<PageData>) mapper.findForList("PicMapper.getAllById", ids);
 	}
 	
 	/**

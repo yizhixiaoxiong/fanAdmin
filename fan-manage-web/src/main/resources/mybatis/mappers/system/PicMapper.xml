@@ -65,6 +65,15 @@
 		where p.PICTURES_ID = #{PICTURES_ID}
 	</select>
 	
+	<!-- 根据id批量查找 -->
+	<select id="getAllById" parameterType="String" resultType="pd">
+		select PATH from <include refid="tableName"></include>
+		where PICTURES_ID in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+				#{item}
+		</foreach>
+	</select>
+		
 	<!-- 新增 -->
 	<insert id="save">
 		insert into <include refid="tableName"></include>
@@ -89,4 +98,30 @@
 		where 
 			PICTURES_ID = #{PICTURES_ID}
 	</update>
+	
+	<!-- 根据id删除图片 -->
+	<delete id="delete" parameterType="pd">
+		delete from <include refid="tableName"></include>
+		where PICTURES_ID = #{PICTURES_ID}
+	</delete>
+	
+	<!-- 删除全部 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from <include refid="tableName"></include>
+		where PICTURES_ID in
+			<foreach collection="array" index="index" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+	</delete>
+	
+	<!-- 更新 -->
+	<update id="delTp">
+			update 
+				<include refid="tableName"></include>
+			set
+				PATH = ''
+			where
+				PICTURES_ID = #{PICTURES_ID}
+	</update>
+	
 </mapper>

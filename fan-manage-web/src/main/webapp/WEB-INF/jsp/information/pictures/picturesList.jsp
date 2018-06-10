@@ -167,7 +167,7 @@
 	<%@ include file="../../system/index/foot.jsp"%>
 	<!-- ace scripts -->
 	<script src="static/ace/js/ace/ace.js"></script>
-	
+	<!-- 提示窗口 -->
 	<script type="text/javascript">
 		$(top.hangge());
 		
@@ -231,12 +231,57 @@
 		//删除
 		//参数：id和路径
 		function del(Id,path){
-			if()
+			if(confirm("确当删除？")){
+				top.jzts();
+				var url = "<%=basePath%>rest/pictures/delete?PICTURES_ID="+Id+"&PATH="+path+"&tm="+new Date().getTime();
+				$.get(url,function(data){
+					alert(data);
+					data = JSON.parse(data);
+					if("success" == data.result){
+						nextPage(${page.currentPage});
+					}else{
+						alert("删除失败");
+					}
+				});
+			}
 		}
-		
 		//批量删除
+		//目标:获取ids
 		function makeAll(msg){
-			
+			if(confirm("确定删除全部？")){
+				var checked = document.getElementsByName("ids");	//所有的checked
+				var str = '';
+				for (var i = 0; i < checked.length; i++) {
+					if(checked[i].checked){			//如果被选中
+						if( str == ''){
+							str += checked[i].value;
+						}else{
+							str += ','+checked[i].value;
+						}
+					}
+				}
+				if(str==''){
+					alert("您没有选择任何内容!"); 
+					return;
+				}else{
+					if(msg == '确定要删除选中的数据吗?'){
+						top.jzts();
+						$.ajax({
+							type:"post",
+							url: '<%=basePath%>rest/pictures/deleteAll?tm='+new Date().getTime(),
+					    	data: {DATA_IDS:str},
+							dataType:'json',
+							cache:false,
+							success:function(data){
+								if("success" == data.result){
+									setTimeout("self.location=self.location",100);
+									nextPage(${page.currentPage});
+								}
+							}
+						});
+					}
+				}
+			}
 		}
 	</script>
 </body>

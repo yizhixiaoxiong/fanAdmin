@@ -2,8 +2,8 @@ package com.fan.manage.controller;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +13,7 @@ import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.tools.Tool;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -24,18 +25,17 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
-import serviceUtils.Jurisdiction;
-
 import com.fan.manage.pojo.Page;
 import com.fan.manage.service.PictureService;
 import com.fan.manage.utils.FileUpload;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.zxing.qrcode.decoder.Mode;
 
 import common.utils.Const;
-import common.utils.DateUtil;
+import common.utils.DeleteFiles;
 import common.utils.PageData;
 import common.utils.Tools;
+import serviceUtils.Jurisdiction;
 
 /**
  * 图片控制类
@@ -181,25 +181,138 @@ public class PicturesController extends BaseController{
 		ModelAndView mv = this.getModelAndView();
 		PageData pd = this.getPageData();
 		String fileName = "";
+		if(PATH == null) {
+			PATH = "";
+		}
 		if(null != file && !file.isEmpty()){	//非空
 			String filePath = basePath + File.separator+Const.FILEPATHIMG;	//E:/game/uploadFiles/uploadImgs/fileName
 			fileName = FileUpload.fileUp(file, filePath, this.get32UUID());	//返回文件名
 			pd.put("NAME", fileName);							//文件名
 			pd.put("PATH", fileName);							//路径
 		}else {
-			System.out.println("上传失败");
+			pd.put("PATH", PATH);
 		}
 		pd.put("TITLE", TITLE);				//标题
 		pd.put("PICTURES_ID", PICTURES_ID);	//主键
-		pd.put("PATH", PATH);				//路径
 		pd.put("MASTER_ID", MASTER_ID);		//所属
 		pd.put("BZ", BZ);					//备注
-		
 		pictureService.edit(pd);
-		
 		mv.addObject("success", "msg");
 		mv.setViewName("saveResult");
 		return mv;
 	}
 	
+	/**
+	 * 删除
+	 * 参数：id和path
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/delete")
+	@ResponseBody
+	public String delete() throws Exception {
+		Map<String, String> map = new HashMap<String,String>();
+		String info = "";
+		PageData pd = this.getPageData();
+		String PATH = pd.getString("PATH");
+		try {
+			if(Tools.notEmpty(PATH.trim())) {
+				String fielPath = basePath+File.separator+Const.FILEPATHIMG+PATH;
+				DeleteFiles.deleteFile(fielPath);
+			}
+			if(PATH != null) {
+				pictureService.delete(pd);
+			}
+			info = "success";
+		} catch (Exception e) {
+			e.printStackTrace();
+			info = "failed";
+		}
+		map.put("result", info);
+		ObjectMapper mapper = new ObjectMapper();
+		String json = mapper.writeValueAsString(map);
+		return json;
+	}
+	
+	/**
+	 * 批量删除
+	 * 参数:ids(id字符串)
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/deleteAll")
+	@ResponseBody
+	public String deleteAll() throws Exception {
+		Map<String, String> map = new HashMap<String,String>();
+		String info = "";
+		PageData pd = this.getPageData();
+		String DATA_IDS = pd.getString("DATA_IDS");
+		List<PageData> pathList = new ArrayList<PageData>();
+		String[] arrayIds = DATA_IDS.split(",");	//id数组
+		try {
+			pathList = pictureService.getAllById(arrayIds);	//根据id获取路径集合
+			for (int i = 0; i < arrayIds.length; i++) {
+				String PATH = pathList.get(i).getString("PATH");
+				if(Tools.notEmpty(PATH.trim())) {	//获取路径
+					String filePath = basePath + File.separator + Const.FILEPATHIMG+PATH;
+					DeleteFiles.deleteFile(filePath);
+				}
+			}
+			pictureService.deleteAll(arrayIds);
+			info = "success";
+		} catch (Exception e) {
+			info = "failed";
+			e.printStackTrace();
+		}
+		
+		map.put("result", info);
+		ObjectMapper mapper = new ObjectMapper();
+		String json = mapper.writeValueAsString(map);
+		return json;
+	}
+	
+	/**
+	 * 在更新的窗口中删除图片
+	 * 参数:id和path
+	 * 	id:数据库中删除
+	 * 	path:磁盘删除
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/deltp")
+	@ResponseBody
+	public String deltp() throws Exception {
+		Map<String, String> map = new HashMap<String,String>();
+		PageData pd = this.getPageData();
+		String info = "";
+		String path = pd.getString("PATH");
+		try {
+			if(Tools.notEmpty(path.trim())) {
+				String filePath = basePath+File.separator+Const.FILEPATHIMG+path;
+				DeleteFiles.deleteFile(filePath);		//磁盘删除
+			}
+			if(path != null) {
+				pictureService.delTp(pd);	//这里是将PATH更新为""
+			}
+			info = "success";
+		} catch (Exception e) {
+			e.printStackTrace();
+			info = "failed";
+		}
+		map.put("result", info);
+		ObjectMapper mapper = new ObjectMapper();
+		String json = mapper.writeValueAsString(map);
+		return json;
+	}
+	
+	/**
+	 * 去爬虫页
+	 * @return
+	 */
+	@RequestMapping("/goImageCrawler")
+	public ModelAndView goImageCrawler() {
+		ModelAndView mv = this.getModelAndView();
+		mv.setViewName("information/pictures/imageCrawler");
+		return mv;
+	}
 }
