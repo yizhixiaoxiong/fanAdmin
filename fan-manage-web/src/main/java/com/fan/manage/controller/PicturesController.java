@@ -19,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
@@ -90,10 +91,10 @@ public class PicturesController extends BaseController{
 	@ResponseBody
 	public String add(MultipartFile file) throws Exception{
 		Map<String,String> map = new HashMap<String,String>();
-		String  ffile = DateUtil.getDays(), fileName = "";
+		String fileName = "";
 		PageData pd = new PageData();
 		if(null != file && !file.isEmpty()){	//非空
-			String filePath = basePath + File.separator+Const.FILEPATHIMG + ffile;	//E:/game/uploadFiles/uploadImgs/ffile
+			String filePath = basePath + File.separator+Const.FILEPATHIMG;	//E:/game/uploadFiles/uploadImgs/fileName
 			fileName = FileUpload.fileUp(file, filePath, this.get32UUID());	//返回文件名
 		}else {
 			System.out.println("上传失败");
@@ -101,7 +102,7 @@ public class PicturesController extends BaseController{
 		pd.put("PICTURES_ID", this.get32UUID());			//主键
 		pd.put("TITLE", "图片");								//标题
 		pd.put("NAME", fileName);							//文件名
-		pd.put("PATH", ffile + "/" + fileName);				//路径
+		pd.put("PATH", fileName);				//路径
 		pd.put("CREATETIME", Tools.dateToStr(new Date()));	//创建时间
 		pd.put("MASTER_ID", "1");							//附属与
 		pd.put("BZ", "图片管理处上传");							//备注
@@ -121,13 +122,13 @@ public class PicturesController extends BaseController{
 	 * @return
 	 * @throws IOException 
 	 */
-	@RequestMapping(value = "/IoReadImage/20180608/{imgPath}" , method = RequestMethod.GET)
+	@RequestMapping(value = "/IoReadImage/{imgPath}" , method = RequestMethod.GET)
 	public String IoReadImage(@PathVariable String imgPath,HttpServletRequest request,HttpServletResponse response) throws IOException {
 		ServletOutputStream out = null;  
         FileInputStream ips = null;  
         
 		try {
-			String path = basePath + File.separator + Const.FILEPATHIMG +"20180608/"+imgPath+".png";
+			String path = basePath + File.separator + Const.FILEPATHIMG+imgPath+".png";
 			ips = new FileInputStream(new File(path));		//流
 			response.setContentType("multipart/form-data");	//设置编码类型
 			out = response.getOutputStream();
@@ -152,10 +153,11 @@ public class PicturesController extends BaseController{
 	 * @return
 	 * @throws Exception 
 	 */
-	@RequestMapping("/toEdit")
-	public ModelAndView toEdit() throws Exception {
+	@RequestMapping("/goEdit")
+	public ModelAndView goEdit() throws Exception {
 		ModelAndView mv = this.getModelAndView();
 		PageData pd = this.getPageData();
+		//根据id读取图片
 		pd = pictureService.findById(pd);
 		mv.addObject("msg", "edit");
 		mv.addObject("pd", pd);
@@ -166,12 +168,38 @@ public class PicturesController extends BaseController{
 	/**
 	 * 更新
 	 * @return
+	 * @throws Exception 
 	 */
 	@RequestMapping("/edit")
-	@ResponseBody
-	public String edit() {
+	public ModelAndView edit(
+							@RequestParam(value="tp",required=false) MultipartFile file,
+							@RequestParam(value="TITLE",required=false) String TITLE,
+							@RequestParam(value="PICTURES_ID",required=false) String PICTURES_ID,
+							@RequestParam(value="tpz",required=false) String PATH,
+							@RequestParam(value="MASTER_ID",required=false) String MASTER_ID,
+							@RequestParam(value="BZ",required=false) String BZ) throws Exception {
+		ModelAndView mv = this.getModelAndView();
+		PageData pd = this.getPageData();
+		String fileName = "";
+		if(null != file && !file.isEmpty()){	//非空
+			String filePath = basePath + File.separator+Const.FILEPATHIMG;	//E:/game/uploadFiles/uploadImgs/fileName
+			fileName = FileUpload.fileUp(file, filePath, this.get32UUID());	//返回文件名
+			pd.put("NAME", fileName);							//文件名
+			pd.put("PATH", fileName);							//路径
+		}else {
+			System.out.println("上传失败");
+		}
+		pd.put("TITLE", TITLE);				//标题
+		pd.put("PICTURES_ID", PICTURES_ID);	//主键
+		pd.put("PATH", PATH);				//路径
+		pd.put("MASTER_ID", MASTER_ID);		//所属
+		pd.put("BZ", BZ);					//备注
 		
-		return null;
+		pictureService.edit(pd);
+		
+		mv.addObject("success", "msg");
+		mv.setViewName("saveResult");
+		return mv;
 	}
 	
 }

@@ -76,4 +76,17 @@
  	 		<include refid="FieldValue"></include>
  	 	)
 	</insert>
+	
+	<!-- 更新图片信息 -->
+	<update id="update" parameterType="pd">
+		update <include refid="tableName"></include>
+		set 
+			TITLE = #{TITLE},
+			NAME  = #{NAME},	
+			PATH  = #{PATH},
+			MASTER_ID = #{MASTER_ID},	
+			BZ	= #{BZ}
+		where 
+			PICTURES_ID = #{PICTURES_ID}
+	</update>
 </mapper>

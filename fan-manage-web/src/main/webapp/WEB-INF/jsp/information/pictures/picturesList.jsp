@@ -64,7 +64,10 @@
 						<thead>
 							<tr>
 								<th class="center" onclick="selectAll()" style="width:35px;">
-									<label><input type="checkbox" id="zcheckbox" class="ace"/></label>
+									<label>
+										<input type="checkbox" id="zcheckbox" class="ace" />
+										<span class="lbl"></span>
+									</label>
 								</th>
 								<th class="center" style="width:50px;">序号</th>
 								<th class="center">图片</th>
@@ -91,8 +94,8 @@
 										</td>
 										<td class='center' style="width:30px;">${vs.index+1}</td>
 										<td class="center">
-											<a href="<%=basePath%>rest/pictures/IoReadImage/20180608/${var.PATH}" title="${var.TITLE}" class="bwGal">
-												<img src="<%=basePath%>rest/pictures/IoReadImage/20180608/${var.PATH}" alt="${var.TITLE}" width="100">
+											<a href="<%=basePath%>rest/pictures/IoReadImage/${var.PATH}" title="${var.TITLE}" class="bwGal">
+												<img src="<%=basePath%>rest/pictures/IoReadImage/${var.PATH}" value="${var.PATH}" alt="${var.TITLE}" width="100" id="pic">
 											</a>
 										</td>
 										<td class='center'>${var.TITLE}</td>
@@ -173,10 +176,21 @@
 			centered: true,
 			hideSource: true
 		});
+		
 		//全选按钮
 		function selectAll(){
-			
+			var checkList = document.getElementsByName ("ids");
+			if(document.getElementById("zcheckbox").checked){
+				for(var i = 0;checkList.length;i++){
+					checkList[i].checked = true;
+				}
+			}else{
+				for(var i = 0;checkList.length;i++){
+					checkList[i].checked = false;
+				}
+			}
 		}
+		
 		//新增
 		function add(){
 		 	top.jzts();
@@ -203,14 +217,23 @@
 			var diag = new top.Dialog();
 			diag.Drag=true;
 			diag.Title ="编辑";
-			diag.URL = '<%=basePath%>rest/pictures/goEdit';
+			diag.URL = '<%=basePath%>rest/pictures/goEdit?PICTURES_ID='+Id;
 			diag.Width = 800;
 		 	diag.Height = 490;
+		 	diag.CancelEvent = function(){
+		 		if(diag.innerFrame.contentWindow.document.getElementById('zhongxin').style.display == 'none'){
+					 nextPage(${page.currentPage});
+				}
+		 		diag.close();
+		 	};
+		 	 diag.show();
 		}
 		//删除
+		//参数：id和路径
 		function del(Id,path){
-			
+			if()
 		}
+		
 		//批量删除
 		function makeAll(msg){
 			
