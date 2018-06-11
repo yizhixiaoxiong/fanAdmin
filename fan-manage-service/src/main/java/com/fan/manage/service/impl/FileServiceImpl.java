@@ -17,42 +17,66 @@ import common.utils.PageData;
  * @author hanxiaofan
  *
  */
+@SuppressWarnings("unchecked")
 @Service("fileService")
 public class FileServiceImpl implements FileService {
 
 	@Resource(name="mapperSupport")
 	private MapperSupport mapper;
 	
+	/**
+	 * 新增文件
+	 */
 	@Override
 	public void save(PageData pd) throws Exception {
 		mapper.save("FileMapper.save", pd);
 	}
 
+	/**
+	 * 删除文件
+	 */
 	@Override
 	public void delete(PageData pd) throws Exception {
 		mapper.delete("FileMapper.delete", pd);
 	}
-
+	
+	/**
+	 * 更新文件
+	 */
 	@Override
 	public void update(PageData pd) throws Exception {
 		mapper.update("FileMapper.update", pd);
 	}
-
+	
+	/**
+	 * 列表
+	 * page:分页
+	 */
 	@Override
 	public List<PageData> list(Page page) throws Exception {
-		return (List<PageData>) mapper.findForList("FileMapper.list", page);
+		return (List<PageData>) mapper.findForList("FileMapper.datalistPage", page);
 	}
 
+	/**
+	 * 全部列表
+	 */
 	@Override
 	public List<PageData> listAll(PageData pd) throws Exception {
 		return (List<PageData>) mapper.findForList("FileMapper.listAll", pd);
 	}
-
+	
+	/**
+	 * 根据id查找
+	 */
 	@Override
 	public PageData findById(PageData pd) throws Exception {
 		return (PageData) mapper.findForObject("FileMapper.findById", pd);
 	}
-
+	
+	/**
+	 * 删除全部
+	 * ArrayDATA_IDS：id集合
+	 */
 	@Override
 	public void deleteAll(String[] ArrayDATA_IDS) throws Exception {
 		mapper.delete("FileMapper.deleteAll", ArrayDATA_IDS);

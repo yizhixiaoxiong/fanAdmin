@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 
 /**
  * 上传工具类
@@ -13,6 +14,17 @@ import java.io.InputStream;
  *
  */
 public class FileUtil {
+	
+	/**
+	 * 获取文件的大小
+	 * @param fielPath	文件路径
+	 * @return
+	 */
+	public static String getFilesize(String fielPath) {
+		DecimalFormat df = new DecimalFormat("#.00");
+		File file = new File(fielPath);
+		return df.format(Double.valueOf(file.length())/1024);
+	}
 	
 	/**
 	 * 单个文件上传

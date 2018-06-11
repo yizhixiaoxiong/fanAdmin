@@ -3,7 +3,11 @@ package com.fan.manage.utils;
 import java.awt.image.BufferedImage;
 
 import jp.sourceforge.qrcode.data.QRCodeImage;
-
+/**
+ * 生成二维码的实现类
+ * @author hanxiaofan
+ *
+ */
 public class TowDimensionCodeImage implements QRCodeImage {
 	
 	BufferedImage bufImg;
