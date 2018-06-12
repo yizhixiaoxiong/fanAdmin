@@ -67,6 +67,7 @@
 										<th class="center">备注</th>
 										<th class="center">上传时间</th>
 										<th class="center">文件大小</th>
+										<th class="center">下载次数</th>
 										<th class="center">操作</th>
 									</tr>
 								</thead>
@@ -96,18 +97,19 @@
 													<td class='center'>${var.BZ}</td>
 													<td class='center' style="width:150px;">${var.CTIME}</td>
 													<td class='center' style="width:100px;">${var.FILESIZE}&nbsp;KB</td>
+													<td class='center' style="width:100px;" id="${var.FHFILE_ID}">${var.DOWNLOAD}&nbsp;次</td>
 													<td class='center' style="width:150px;">
 														<c:if test="${QX.edit != 1 && QX.del != 1 }">
 														<span class="label label-large label-grey arrowed-in-right arrowed-in"><i class="ace-icon fa fa-lock" title="无权限"></i></span>
 														</c:if>
 														<div class="hidden-sm hidden-xs btn-group">
 															<c:if test="${QX.edit == 1 }">
-															<a class="btn btn-xs btn-success" title="下载" onclick="window.location.href='<%=basePath%>/fhfile/download.do?FHFILE_ID=${var.FHFILE_ID}'">
+															<a class="btn btn-xs btn-success" title="下载" onclick="window.location.href='<%=basePath%>rest/fhfile/download?FHFILE_ID=${var.FHFILE_ID}'">
 																<i class="ace-icon fa fa-cloud-download bigger-120" title="下载"></i>
 															</a>
 															</c:if>
 															<c:if test="${QX.del == 1 }">
-															<a class="btn btn-xs btn-danger" onclick="del('${var.FHFILE_ID}');">
+															<a class="btn btn-xs btn-danger" onclick="del('${var.FHFILE_ID}','${var.NAME}');">
 																<i class="ace-icon fa fa-trash-o bigger-120" title="删除"></i>
 															</a>
 															</c:if>
@@ -121,7 +123,7 @@
 																<ul class="dropdown-menu dropdown-only-icon dropdown-yellow dropdown-menu-right dropdown-caret dropdown-close">
 																	<c:if test="${QX.edit == 1 }">
 																	<li>
-																		<a style="cursor:pointer;" onclick="window.location.href='<%=basePath%>/fhfile/download.do?FHFILE_ID=${var.FHFILE_ID}'" class="tooltip-success" data-rel="tooltip" title="下载">
+																		<a style="cursor:pointer;" onclick="window.location.href='<%=basePath%>rest/fhfile/download?FHFILE_ID=${var.FHFILE_ID}'" class="tooltip-success" data-rel="tooltip" title="下载">
 																			<span class="green">
 																				<i class="ace-icon fa fa-cloud-download bigger-120"></i>
 																			</span>
@@ -130,7 +132,7 @@
 																	</c:if>
 																	<c:if test="${QX.del == 1 }">
 																	<li>
-																		<a style="cursor:pointer;" onclick="del('${var.FHFILE_ID}','${var.NAME }');" class="tooltip-error" data-rel="tooltip" title="删除">
+																		<a style="cursor:pointer;" onclick="del('${var.FHFILE_ID}','${var.NAME}');" class="tooltip-error" data-rel="tooltip" title="删除">
 																			<span class="red">
 																				<i class="ace-icon fa fa-trash-o bigger-120"></i>
 																			</span>
@@ -242,11 +244,11 @@ function add(){
 	 diag.show();
 }
 
-<%-- //根据id删除
+//根据id删除
 function del(id,NAME){
 	bootbox.confirm("要删除["+NAME+"]吗？",function(result){
 		if(result){
-			var url = '<%=basePath%>rest/fhfile/delete?FHFILE_ID='+id+'&tm='+new Date().gettime();
+			var url = '<%=basePath%>rest/fhfile/delete?FHFILE_ID='+id+'&tm='+new Date().getTime();
 			$.get(url,function(data){
 				data = JSON.parse(data);
 				if("success" == data.result){
@@ -258,13 +260,14 @@ function del(id,NAME){
 		}
 	});
 }
+
 //批量操作
 function makeAll(msg){
 	bootbox.confirm("确定要删除["+msg+"]",function(result){
 		if(result){
 			var str = '';
 			var checkedList = document.getElementsByName("ids");
-			for(var i = 0;i<checkedList.leagth;i++){
+			for(var i = 0;i<checkedList.length;i++){
 				if(checkedList[i].checked){
 					if(str == ''){
 						str += checkedList[i].value;
@@ -293,13 +296,15 @@ function makeAll(msg){
 					$.ajax({
 						type: "POST",
 						url: '<%=basePath%>rest/fhfile/deleteAll?tm='+new Date().getTime(),
-				    	data: {DATA_IDS:str},
+				    	data: {IDS:str},
 						dataType:'json',
 						cache: false,
 						success: function(data){
 							if("success" == data.result){
 								setTimeout("self.location=self.location",100);
 								nextPage(${page.currentPage});
+							}else{
+								alert(data.result);
 							}
 						}
 					})
@@ -307,7 +312,42 @@ function makeAll(msg){
 			}
 		}
 	})
-} --%>
+} 
+
+//预览pdf
+function goViewPdf(fileName,Id){
+	var diag = new top.Dialog();
+	diag.Drag=true;
+	diag.Title =fileName;
+	diag.URL = '<%=basePath%>rest/fhfile/goViewPdf?FHFILE_ID='+Id;
+	diag.Width = 1000;
+	diag.Height = 600;
+	diag.Modal = false;				//有无遮罩窗口
+	diag. ShowMaxButton = true;		//最大化按钮
+	diag.ShowMinButton = true;		//最小化按钮
+	diag.CancelEvent = function(){ 	//关闭事件
+	diag.close();
+	};
+	diag.show();
+}
+
+//预览txt,java,php,等文本文件页面
+function goViewTxt(fileName,Id,encoding){
+	var diag = new top.Dialog();
+	diag.Drag=true;
+	diag.Title =fileName;
+	diag.URL = '<%=basePath%>rest/fhfile/goViewTxt?FHFILE_ID='+Id+'&encoding='+encoding;
+	diag.Width = 1000;
+	diag.Height = 608;
+	diag.Modal = false;				//有无遮罩窗口
+	diag.ShowMinButton = true;		//最小化按钮
+	diag.CancelEvent = function(){ 	//关闭事件
+	diag.close();
+	};
+	diag.show();
+}
+
+
 
 </script>
 </body>

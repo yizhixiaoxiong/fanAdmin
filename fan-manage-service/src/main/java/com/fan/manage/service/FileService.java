@@ -50,6 +50,13 @@ public interface FileService {
 	 */
 	public PageData findById(PageData pd)throws Exception;
 	
+	/**
+	 * 根据id批量查找
+	 * @param ids
+	 * @return
+	 */
+	public List<PageData> findListByIds(String[] ids) throws Exception;
+	
 	/**批量删除
 	 * @param ArrayDATA_IDS
 	 * @throws Exception

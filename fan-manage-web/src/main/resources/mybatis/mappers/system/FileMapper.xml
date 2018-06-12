@@ -17,6 +17,7 @@
 		BZ,	
 		USERNAME,	
 		FILESIZE,	
+		DOWNLOAD,	
 		FHFILE_ID
 	</sql>
 	
@@ -29,6 +30,7 @@
 		#{BZ},	
 		#{USERNAME},	
 		#{FILESIZE},	
+		#{DOWNLOAD},	
 		#{FHFILE_ID}
 	</sql>
 	
@@ -38,6 +40,26 @@
 			<include refid="Field"></include>
 		from 
 			<include refid="tabelName"></include>
+	</select>
+	
+	<!-- 根据id查找 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		select 
+			<include refid="Field"></include>
+		from 
+			<include refid="tabelName"></include>
+		where 
+			FHFILE_ID = #{FHFILE_ID}
+	</select>
+	
+	<!-- 根据id批量查找 -->
+	<select id="findListByIds" parameterType="String" resultType="pd">
+		select <include refid="Field"></include>
+		from <include refid="tabelName"></include>
+		where FHFILE_ID in
+			<foreach collection="array" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
 	</select>
 	
 	<!-- 新增文件 -->
@@ -52,4 +74,28 @@
 		)
 		
 	</insert>
+	
+	<!-- 更新下载次数 -->
+	<update id="update" parameterType="pd">
+		update <include refid="tabelName"></include>
+		set
+			DOWNLOAD = #{DOWNLOAD}
+		where
+			FHFILE_ID = #{FHFILE_ID}
+	</update>
+	
+	<!-- 删除文件 -->
+	<delete id="delete" parameterType="pd">
+		delete from <include refid="tabelName"></include>
+		where FHFILE_ID = #{FHFILE_ID}
+	</delete>
+		
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from <include refid="tabelName"></include>
+		where FHFILE_ID in
+			<foreach collection="array" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+	</delete>
 </mapper>

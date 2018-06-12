@@ -82,4 +82,12 @@ public class FileServiceImpl implements FileService {
 		mapper.delete("FileMapper.deleteAll", ArrayDATA_IDS);
 	}
 
+	/**
+	 * 根据id批量查找
+	 */
+	@Override
+	public List<PageData> findListByIds(String[] ids) throws Exception {
+		return  (List<PageData>) mapper.findForList("FileMapper.findListByIds", ids);
+	}
+
 }

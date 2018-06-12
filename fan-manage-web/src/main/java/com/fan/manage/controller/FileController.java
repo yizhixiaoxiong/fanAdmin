@@ -13,6 +13,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -30,6 +31,7 @@ import com.fan.manage.utils.FileUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import common.utils.Const;
+import common.utils.DeleteFiles;
 import common.utils.PageData;
 import common.utils.Tools;
 import serviceUtils.Jurisdiction;
@@ -78,6 +80,7 @@ public class FileController extends BaseController{
 			npd.put("DEPARTMENT_ID", fileList.get(i).getString("DEPARTMENT_ID"));//机构级别
 			npd.put("FILESIZE", fileList.get(i).getString("FILESIZE"));		//文件大小
 			npd.put("BZ", fileList.get(i).getString("BZ"));					//备注
+			npd.put("DOWNLOAD", fileList.get(i).getString("DOWNLOAD"));					//备注
 			nvarList.add(npd);
 		}
 		mv.addObject("fileList", nvarList);
@@ -121,6 +124,7 @@ public class FileController extends BaseController{
 		pd.put("CTIME", Tools.dateToStr(new Date()));		//时间
 		pd.put("USERNAME", Jurisdiction.getUsername());		//获取上传者
 		pd.put("FILESIZE", FileUtil.getFilesize(fielPath));	//获取文件大小
+		pd.put("DOWNLOAD", "0");	//获取文件大小
 		
 		fileService.save(pd);		
 		mv.addObject("msg","success");
@@ -144,7 +148,7 @@ public class FileController extends BaseController{
 		 if(multipartResolver.isMultipart(request)) {
 			MultipartHttpServletRequest multiRequest = (MultipartHttpServletRequest) request;
 			//获取multiRequest 中所有的文件名
-            Iterator iter=multiRequest.getFileNames();
+			Iterator<String> iter=multiRequest.getFileNames();
             while(iter.hasNext()) {
             	 //一次遍历所有文件
                 MultipartFile file=multiRequest.getFile(iter.next().toString());
@@ -162,38 +166,171 @@ public class FileController extends BaseController{
 	}
 	
 	/**
+	 * 删除文件
+	 * (删除数据库，删除磁盘)
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/delete")
+	@ResponseBody
+	public String delete() throws Exception {
+		Map<String, String> map = new HashMap<String,String>();
+		String info = "";
+		PageData pd = this.getPageData();
+		//获取路径
+		pd = fileService.findById(pd);
+		String FILEPATH = pd.getString("FILEPATH");
+		if(FILEPATH == null && "".equals(FILEPATH)) {
+			info = "数据库中的路径为空！";
+		}
+		try {
+			//删除磁盘
+			String path = basePath + File.separator+Const.FILEPATHFILE+FILEPATH;
+			DeleteFiles.deleteFile(path);
+			info = "success";
+			fileService.delete(pd);	//删除数据
+		} catch (Exception e) {
+			e.printStackTrace();
+			info = "failed";
+		}
+		map.put("result", info);
+		ObjectMapper mapper = new ObjectMapper();
+		String json = mapper.writeValueAsString(map);
+		return json;
+	}
+	
+	/**
+	 * 批量删除
+	 * (删除数据库，删除磁盘)
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/deleteAll")
+	@ResponseBody
+	public String deleteAll() throws Exception {
+		Map<String, String> map = new HashMap<String,String>();
+		String info = "";
+		PageData pd = this.getPageData();
+		try {
+			//获取id字符串
+			String strIds = pd.getString("IDS");
+			String[] ids = strIds.split(",");	//以','分割
+			List<PageData> pdList = fileService.findListByIds(ids);	//获取file集合
+			if(pdList != null) {
+			for (PageData pageData : pdList) {
+					String FILEPATH = pageData.getString("FILEPATH");	//获取路径
+					String path = basePath + File.separator+Const.FILEPATHFILE+FILEPATH;
+					DeleteFiles.deleteFile(path);		//单个删除磁盘上的文件
+				}
+			fileService.deleteAll(ids);
+			info = "success";
+			}else {
+				info = "不存在该数据，亲检查数据库";
+			}
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+		map.put("result", info);
+		ObjectMapper mapper = new ObjectMapper();
+		String json = mapper.writeValueAsString(map);
+		return json;
+	}
+	
+	/**
+	 * 下载
+	 * @param response
+	 * @throws Exception 
+	 */
+	@RequestMapping("/download")
+	public void download(HttpServletResponse response) throws Exception {
+		PageData pd = this.getPageData();
+		pd = fileService.findById(pd);
+		String DOWNLOAD = pd.getString("DOWNLOAD");	//获取下载次数
+		String FILEPATH = pd.getString("FILEPATH");	//下载路径
+		String fileName = pd.getString("NAME");		//获取文件名
+		String extName = FILEPATH.substring(FILEPATH.lastIndexOf("."));
+		DOWNLOAD = String.valueOf(Long.parseLong(DOWNLOAD)+1);	//下载次数+1
+		pd.put("DOWNLOAD", DOWNLOAD);
+		fileService.update(pd);		//保存对象
+		//获取路径
+		String filePath = basePath + File.separator+Const.FILEPATHFILE+FILEPATH;
+		FileUtil.fileDownload(response, filePath, fileName+extName);
+	}
+	
+	/**
+	 * 跳转到PDF显示页面
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/goViewPdf")
+	public ModelAndView goViewPdf() throws Exception {
+		ModelAndView mv = this.getModelAndView();
+		PageData pd = new PageData();
+		pd = this.getPageData();
+		pd = fileService.findById(pd);
+		mv.setViewName("information/file/filePDF");
+		mv.addObject("pd", pd);
+		return mv;
+	}
+	
+	/**
+	 * 跳转到文本显示页面
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/goViewTxt")
+	public ModelAndView goViewTxt() throws Exception {
+		ModelAndView mv = this.getModelAndView();
+		PageData pd = new PageData();
+		pd = this.getPageData();
+		String encoding = pd.getString("encoding");	//用来转换格式
+		pd = fileService.findById(pd);
+		
+		String FILEPATH = pd.getString("FILEPATH");
+		String fileName = pd.getString("NAME");		//获取文件名
+		String extName = FILEPATH.substring(FILEPATH.lastIndexOf("."));
+		String filePath = basePath + File.separator+Const.FILEPATHFILE+FILEPATH+File.separator+fileName+extName;;
+		String code = Tools.readTxtFileAll(filePath,encoding);
+		
+		pd.put("code", code);
+		mv.setViewName("information/file/fileTxt");
+		mv.addObject("pd", pd);
+		return mv;
+	}
+	
+	/**
 	 * 获取上传的文本类型(用于页面图标显示)
-	 * @param fileName	文件拓展名
+	 * @param extName	文件拓展名
 	 * @return
 	 */
 	@SuppressWarnings("unused")
-	public String getFileType(String fileName) {
+	public String getFileType(String extName) {
 		String fileType = "file";
-		int zindex1 = "java,php,jsp,html,css,txt,asp".indexOf(fileName);
+		int zindex1 = "java,php,jsp,html,css,txt,asp".indexOf(extName);
 		if(zindex1 != -1) {
 			fileType = "wenben";
 		}
-		int zindex2 = "jpg,gif,bmp,png".indexOf(fileName);
+		int zindex2 = "jpg,gif,bmp,png,PNG".indexOf(extName);
 		if(zindex2 != -1) {
 			fileType = "tupian";
 		}
-		int zindex3 = "rar,zip,rar5".indexOf(fileName);
+		int zindex3 = "rar,zip,rar5".indexOf(extName);
 		if(zindex3 != -1) {
 			fileType = "yasuo";
 		}
-		int zindex4 = "doc,docx".indexOf(fileName);
+		int zindex4 = "doc,docx".indexOf(extName);
 		if(zindex4 != -1) {
 			fileType = "doc";
 		}
-		int zindex5 = "xls,xlsx".indexOf(fileName);
+		int zindex5 = "xls,xlsx".indexOf(extName);
 		if(zindex5 != -1){
 			fileType = "xls";		//xls文件类型
 		}
-		int zindex6 = "ppt,pptx".indexOf(fileName);
+		int zindex6 = "ppt,pptx".indexOf(extName);
 		if(zindex6 != -1){
 			fileType = "ppt";		//ppt文件类型
 		}
-		int zindex7 = "pdf".indexOf(fileName);
+		int zindex7 = "pdf".indexOf(extName);
 		if(zindex7 != -1){
 			fileType = "pdf";		//pdf文件类型
 		}		
