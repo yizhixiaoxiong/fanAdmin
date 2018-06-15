@@ -262,4 +262,46 @@
 			 ROLE_ID = #{ROLE_ID}
 	</select>
 	
+	<!-- 用户列表(全部) -->
+	<select id="listAllUser" parameterType="pd" resultType="pd" >
+		select  u.USER_ID,
+				u.USERNAME,
+				u.LAST_LOGIN,
+				u.NAME,
+				u.IP,
+				u.EMAIL,
+				u.NUMBER,
+				u.PHONE,
+				r.ROLE_ID,
+				r.ROLE_NAME
+		from <include refid="userTableName"></include> u, <include refid="roleTableName"></include> r 
+		where u.ROLE_ID = r.ROLE_ID 
+		and u.USERNAME != 'admin'
+		and r.PARENT_ID = '1'
+		<if test="keywords!= null and keywords != ''"><!-- 关键词检索 -->
+			and
+				(
+					 u.USERNAME LIKE CONCAT(CONCAT('%', #{keywords}),'%')
+					 or 
+					 u.EMAIL LIKE CONCAT(CONCAT('%', #{keywords}),'%') 
+					 or
+					 u.NUMBER LIKE CONCAT(CONCAT('%', #{keywords}),'%')
+					 or
+					 u.NAME LIKE CONCAT(CONCAT('%', #{keywords}),'%')
+					 or
+					 u.PHONE LIKE CONCAT(CONCAT('%', #{keywords}),'%')
+				)
+		</if>
+		<if test="ROLE_ID != null and ROLE_ID != ''"><!-- 角色检索 -->
+			and u.ROLE_ID=#{ROLE_ID} 
+		</if>
+		<if test="lastLoginStart!=null and lastLoginStart!=''"><!-- 登录时间检索 -->
+			and u.LAST_LOGIN &gt;= #{lastLoginStart} 
+		</if>
+		<if test="lastLoginEnd!=null and lastLoginEnd!=''"><!-- 登录时间检索 -->
+			and u.LAST_LOGIN &lt;= #{lastLoginEnd} 
+		</if>
+		order by u.LAST_LOGIN desc
+	</select>
+	
 </mapper>

@@ -1,28 +1,37 @@
 package com.fan.manage.controller;
 
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
-
-import serviceUtils.Jurisdiction;
 
 import com.fan.manage.pojo.Page;
 import com.fan.manage.pojo.Role;
 import com.fan.manage.service.RoleService;
 import com.fan.manage.service.UserService;
+import com.fan.manage.utils.FileUtil;
+
 import common.utils.AppUtil;
+import common.utils.DeleteFiles;
+import common.utils.POIUtils;
 import common.utils.PageData;
 import common.utils.Tools;
+import serviceUtils.Jurisdiction;
 
 /**
  * 用户Controller
@@ -299,5 +308,49 @@ public class UserController extends BaseController{
 		pdList.add(pd);
 		map.put("list", pdList);
 		return AppUtil.returnObject(pd, map);
+	}
+	
+	/**
+	 * 导出用户信息到EXCEL(03版本)
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/excel")
+	public void exportExcel(HttpServletResponse response) throws Exception {
+		List<String> titles = new ArrayList<String>();
+		PageData pd = new PageData();
+		titles.add("用户名"); 	// 1
+		titles.add("编号"); 		// 2
+		titles.add("姓名"); 		// 3
+		titles.add("职位"); 		// 4
+		titles.add("手机"); 		// 5
+		titles.add("邮箱"); 		// 6
+		titles.add("最近登录"); 	// 7
+		titles.add("上次登录IP"); // 8
+		List<PageData> pdList = userService.listAllUser(pd);
+		HSSFWorkbook workbook = POIUtils.export03(titles, pdList);
+		OutputStream os = new FileOutputStream("E:/测试POI.xls");
+		workbook.write(os);
+		os.close();
+		workbook.close();// 记得关闭工作簿
+		String filePath = "E:/测试POI.xls";
+		String fileName = "测试POI.xls";
+		FileUtil.fileDownload(response, filePath, fileName);
+		DeleteFiles.deleteFile(filePath);	//删除磁盘文件
+	}
+	
+	
+	
+	/**
+	 * 从EXCEL导入到数据库(03)
+	 * @param file
+	 * @return
+	 */
+	@RequestMapping("/readExcel")
+	public ModelAndView readExcel(
+			@RequestParam(value = "excel", required = false) MultipartFile file) {
+		ModelAndView mv = this.getModelAndView();
+		
+		return mv;
 	}
 }
